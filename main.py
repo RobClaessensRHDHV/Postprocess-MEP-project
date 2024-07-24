@@ -10,7 +10,8 @@ from speckle_automate import (
     execute_automate_function,
 )
 
-from flatten import flatten_base
+import requests
+import pandas as pd
 
 
 class FunctionInputs(AutomateBase):
@@ -20,16 +21,11 @@ class FunctionInputs(AutomateBase):
     Please use the pydantic model schema to define your inputs:
     https://docs.pydantic.dev/latest/usage/models/
     """
-
-    # an example how to use secret values
-    whisper_message: SecretStr = Field(title="This is a secret message")
-    forbidden_speckle_type: str = Field(
-        title="Forbidden speckle type",
-        description=(
-            "If a object has the following speckle_type,"
-            " it will be marked with an error."
-        ),
-    )
+    # Username, Speckle token, API URL and token
+    username: str = Field(title="Username")
+    speckle_token: SecretStr = Field(title="Speckle token")
+    api_url: SecretStr = Field(title="API URL")
+    api_token: SecretStr = Field(title="API token")
 
 
 def automate_function(
@@ -42,44 +38,69 @@ def automate_function(
         automate_context: A context helper object, that carries relevant information
             about the runtime context of this function.
             It gives access to the Speckle project data, that triggered this run.
-            It also has conveniece methods attach result data to the Speckle model.
+            It also has convenience methods attach result data to the Speckle model.
         function_inputs: An instance object matching the defined schema.
     """
-    # the context provides a conveniet way, to receive the triggering version
+    # The context provides a convenient way, to receive the triggering version
     version_root_object = automate_context.receive_version()
+    ard = automate_context.automation_run_data
 
-    objects_with_forbidden_speckle_type = [
-        b
-        for b in flatten_base(version_root_object)
-        if b.speckle_type == function_inputs.forbidden_speckle_type
-    ]
-    count = len(objects_with_forbidden_speckle_type)
+    # Setup data for request
+    data = {
+        'project_name': 'MEPPostprocessingProject',
+        'source_url': f"{ard.speckle_server_url}/projects/{ard.project_id}/models/{ard.model_id}@{ard.version_id}",
+        'speckle_token': function_inputs.speckle_token.get_secret_value(),
+    }
 
-    if count > 0:
-        # this is how a run is marked with a failure cause
-        automate_context.attach_error_to_objects(
-            category="Forbidden speckle_type"
-            f" ({function_inputs.forbidden_speckle_type})",
-            object_ids=[o.id for o in objects_with_forbidden_speckle_type if o.id],
-            message="This project should not contain the type: "
-            f"{function_inputs.forbidden_speckle_type}",
-        )
-        automate_context.mark_run_failed(
-            "Automation failed: "
-            f"Found {count} object that have one of the forbidden speckle types: "
-            f"{function_inputs.forbidden_speckle_type}"
-        )
+    # Setup headers for request
+    headers = {
+        'enable-logging': 'False',
+        'source-application': 'RoomBook',
+        'return-type': 'tables',
+        'username': function_inputs.username,
+        'token': function_inputs.api_token.get_secret_value(),
+    }
 
-        # set the automation context view, to the original model / version view
-        # to show the offending objects
-        automate_context.set_context_view()
+    # Implement a (temporary) workaround to pass headers as kwargs
+    # The headers argument is only implemented from Django 4.2, which clashes with the MySQL db version < 8
+    headers = {f"HTTP_{k.replace('-', '_')}": v for k, v in (headers or {}).items()}
+
+    # Set URL
+    url = f"{function_inputs.api_url}/from_datafusr"
+
+    # Make a POST request to the MEP API
+    response = requests.post(url, data=data, **headers).json()
+
+    # Handle response
+    if response.get('building_data'):
+
+        try:
+
+            # Create a dataframe from the API response
+            building_data_df = pd.DataFrame(response['building_data'])
+
+            # Convert to HTML
+            building_data_html = building_data_df.to_html()
+
+            # Store as HTML
+            with open("building_data.html", "w") as fp:
+                fp.write(building_data_html)
+
+            # Attach the HTML table to the Speckle model
+            automate_context.store_file_result("building_data_html")
+
+            # Mark run as successful
+            automate_context.mark_run_success("Building data table successfully generated!")
+
+        except Exception as e:
+
+            # Mark run as failed
+            automate_context.mark_run_failed(f"Automation failed: {e}")
 
     else:
-        automate_context.mark_run_success("No forbidden types found.")
 
-    # if the function generates file results, this is how it can be
-    # attached to the Speckle project / model
-    # automate_context.store_file_result("./report.pdf")
+        # Mark run as failed
+        automate_context.mark_run_failed("Automation failed: No building data could be retrieved!")
 
 
 def automate_function_without_inputs(automate_context: AutomationContext) -> None:

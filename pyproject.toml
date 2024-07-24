@@ -8,6 +8,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 specklepy = "^2.19.5"
+pandas = "^2.2.2"
+requests = "^2.32.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
