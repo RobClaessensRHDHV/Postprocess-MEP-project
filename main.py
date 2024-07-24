@@ -41,14 +41,14 @@ def automate_function(
             It also has convenience methods attach result data to the Speckle model.
         function_inputs: An instance object matching the defined schema.
     """
-    # The context provides a convenient way, to receive the triggering version
-    version_root_object = automate_context.receive_version()
+    # Retrieve relevant context
     ard = automate_context.automation_run_data
+    pl = automate_context.automation_run_data.triggers[0].payload
 
     # Setup data for request
     data = {
         'project_name': 'MEPPostprocessingProject',
-        'source_url': f"{ard.speckle_server_url}/projects/{ard.project_id}/models/{ard.model_id}@{ard.version_id}",
+        'source_url': f"{ard.speckle_server_url}/projects/{ard.project_id}/models/{pl.model_id}@{pl.version_id}",
         'speckle_token': function_inputs.speckle_token.get_secret_value(),
     }
 
