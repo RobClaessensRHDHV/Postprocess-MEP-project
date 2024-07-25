@@ -3,6 +3,7 @@
 Use the automation_context module to wrap your function in an Autamate context helper
 """
 
+import json
 from pydantic import Field, SecretStr
 from speckle_automate import (
     AutomateBase,
@@ -47,13 +48,16 @@ def automate_function(
 
     # Setup data for request
     data = {
-        'project_name': 'MEPPostprocessingProject',
-        'source_url': f"{ard.speckle_server_url}/projects/{ard.project_id}/models/{pl.model_id}@{pl.version_id}",
-        'speckle_token': function_inputs.speckle_token.get_secret_value(),
+        'datafusr_config': {
+            'project_name': 'MEPPostprocessingProject',
+            'source_url': f"{ard.speckle_server_url}/projects/{ard.project_id}/models/{pl.model_id}@{pl.version_id}",
+            'speckle_token': function_inputs.speckle_token.get_secret_value(),
+        }
     }
 
     # Setup headers for request
     headers = {
+        'content-type': 'application/json',
         'enable-logging': 'False',
         'source-application': 'RoomBook',
         'return-type': 'tables',
@@ -77,8 +81,8 @@ def automate_function(
     # Print URL
     print('URL:', url)
 
-    # Make a POST request to the MEP API
-    response = requests.post(url, data=data, headers=headers).json()
+    # Make a POST request to the MEP API, dumping and loading the data to avoid JSON serialization issues
+    response = requests.post(url, json=json.loads(json.dumps(data)), headers=headers).json()
 
     # Try to print some output
     print('Response:', response)
