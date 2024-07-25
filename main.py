@@ -71,6 +71,12 @@ def automate_function(
     # Make a POST request to the MEP API
     response = requests.post(url, data=data, headers=headers).json()
 
+    # Try to print some output
+    print('Response:', response)
+    print('Response type:', type(response))
+    for key, val in response.items():
+        print(f'{key}: {val}')
+
     # Handle response
     if response.get('building_data'):
 
