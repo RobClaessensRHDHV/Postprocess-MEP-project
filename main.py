@@ -69,7 +69,7 @@ def automate_function(
     url = f"{function_inputs.api_url}/from_datafusr"
 
     # Make a POST request to the MEP API
-    response = requests.post(url, data=data, **headers).json()
+    response = requests.post(url, data=data, headers=headers).json()
 
     # Handle response
     if response.get('building_data'):
