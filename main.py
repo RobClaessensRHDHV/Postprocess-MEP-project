@@ -76,7 +76,7 @@ def automate_function(
         print(f'{key}: {val}')
 
     # Set URL
-    url = f"{function_inputs.api_url.get_secret_value()}/from_datafusr"
+    url = f"{function_inputs.api_url.get_secret_value()}/from_datafusr/"
 
     # Print URL
     print('URL:', url)
