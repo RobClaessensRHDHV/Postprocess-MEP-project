@@ -78,20 +78,30 @@ def automate_function(
     # Handle response
     if response.get('building_data'):
 
+        print("Building data successfully retrieved!")
+
         try:
+
+            print("Converting building data to Pandas DataFrame...")
 
             # Create a dataframe from the API response
             building_data_df = pd.DataFrame(response['building_data'])
 
+            print("Converting building data to HTML...")
+
             # Convert to HTML
             building_data_html = building_data_df.to_html()
+
+            print("Storing building data as HTML...")
 
             # Store as HTML
             with open("building_data.html", "w") as fp:
                 fp.write(building_data_html)
 
             # Attach the HTML table to the Speckle model
-            automate_context.store_file_result("building_data_html")
+            # automate_context.store_file_result("building_data_html")
+
+            print("Mark run as successful...")
 
             # Mark run as successful
             automate_context.mark_run_success("Building data table successfully generated!")
