@@ -63,7 +63,7 @@ def automate_function(
 
     # Implement a (temporary) workaround to pass headers as kwargs
     # The headers argument is only implemented from Django 4.2, which clashes with the MySQL db version < 8
-    headers = {f"HTTP_{k.replace('-', '_')}": v for k, v in (headers or {}).items()}
+    # headers = {f"HTTP_{k.replace('-', '_')}": v for k, v in (headers or {}).items()}
 
     # Print headers
     print('Headers:', headers)
