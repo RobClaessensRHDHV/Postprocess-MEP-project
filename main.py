@@ -65,8 +65,17 @@ def automate_function(
     # The headers argument is only implemented from Django 4.2, which clashes with the MySQL db version < 8
     headers = {f"HTTP_{k.replace('-', '_')}": v for k, v in (headers or {}).items()}
 
+    # Print headers
+    print('Headers:', headers)
+    print('Headers type:', type(headers))
+    for key, val in headers.items():
+        print(f'{key}: {val}')
+
     # Set URL
     url = f"{function_inputs.api_url.get_secret_value()}/from_datafusr"
+
+    # Print URL
+    print('URL:', url)
 
     # Make a POST request to the MEP API
     response = requests.post(url, data=data, headers=headers).json()
