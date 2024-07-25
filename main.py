@@ -66,7 +66,7 @@ def automate_function(
     headers = {f"HTTP_{k.replace('-', '_')}": v for k, v in (headers or {}).items()}
 
     # Set URL
-    url = f"{function_inputs.api_url}/from_datafusr"
+    url = f"{function_inputs.api_url.get_secret_value()}/from_datafusr"
 
     # Make a POST request to the MEP API
     response = requests.post(url, data=data, headers=headers).json()
