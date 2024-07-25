@@ -106,7 +106,7 @@ def automate_function(
             print("Attaching building data to Speckle model...")
 
             # Attach the HTML table to the Speckle model
-            automate_context.store_file_result("building_data_html")
+            automate_context.store_file_result("building_data.html")
 
         except Exception as e:
 
