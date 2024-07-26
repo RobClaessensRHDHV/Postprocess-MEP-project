@@ -4,6 +4,9 @@ Use the automation_context module to wrap your function in an Autamate context h
 """
 
 import json
+import tempfile
+from datetime import datetime
+from pathlib import Path
 from pydantic import Field, SecretStr
 from speckle_automate import (
     AutomateBase,
@@ -82,6 +85,12 @@ def automate_function(
 
         try:
 
+            print("Setting up temporary file...")
+
+            # Setup temporary file
+            temp_dir = tempfile.gettempdir()
+            temp_file = Path(temp_dir, f"building_data_{datetime.now().timestamp():.0f}.html")
+
             print("Converting building data to Pandas DataFrame...")
 
             # Create a dataframe from the API response
@@ -95,7 +104,9 @@ def automate_function(
             print("Storing building data as HTML...")
 
             # Store as HTML
-            with open("./building_data.html", "w") as fp:
+            # with open("./building_data.html", "w") as fp:
+            #     fp.write(building_data_html)
+            with open(temp_file, "w") as fp:
                 fp.write(building_data_html)
 
             print("Mark run as successful...")
@@ -106,7 +117,12 @@ def automate_function(
             print("Attaching building data to Speckle model...")
 
             # Attach the HTML table to the Speckle model
-            automate_context.store_file_result("./building_data.html")
+            # automate_context.store_file_result("./building_data.html")
+
+            if temp_file.exists():
+                automate_context.store_file_result(str(temp_file))
+            else:
+                raise FileNotFoundError(f"File not found: {temp_file}")
 
         except Exception as e:
 
