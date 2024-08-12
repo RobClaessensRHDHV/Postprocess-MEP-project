@@ -104,8 +104,8 @@ def automate_function(
             print("Storing building data as HTML...")
 
             # Store as HTML
-            # with open("./building_data.html", "w") as fp:
-            #     fp.write(building_data_html)
+            with open("./building_data.html", "w") as fp:
+                fp.write(building_data_html)
             with open(temp_file, "w") as fp:
                 fp.write(building_data_html)
 
@@ -117,12 +117,10 @@ def automate_function(
             print("Attaching building data to Speckle model...")
 
             # Attach the HTML table to the Speckle model
-            # automate_context.store_file_result("./building_data.html")
-            automate_context.store_file_result("./speckle_automate_test.pdf")
+            automate_context.store_file_result("./building_data.html")
 
             if temp_file.exists():
-                # automate_context.store_file_result(str(temp_file))
-                pass
+                automate_context.store_file_result(str(temp_file))
             else:
                 raise FileNotFoundError(f"File not found: {temp_file}")
 
