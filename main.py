@@ -118,6 +118,7 @@ def automate_function(
 
             # Attach the HTML table to the Speckle model
             # automate_context.store_file_result("./building_data.html")
+            automate_context.store_file_result("./speckle_automate_test.pdf")
 
             if temp_file.exists():
                 automate_context.store_file_result(str(temp_file))
