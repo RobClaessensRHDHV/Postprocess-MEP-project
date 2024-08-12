@@ -120,7 +120,8 @@ def automate_function(
             # automate_context.store_file_result("./building_data.html")
 
             if temp_file.exists():
-                automate_context.store_file_result(str(temp_file))
+                # automate_context.store_file_result(str(temp_file))
+                pass
             else:
                 raise FileNotFoundError(f"File not found: {temp_file}")
 
