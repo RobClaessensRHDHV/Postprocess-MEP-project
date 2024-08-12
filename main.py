@@ -68,10 +68,6 @@ def automate_function(
         'token': function_inputs.api_token.get_secret_value(),
     }
 
-    # Implement a (temporary) workaround to pass headers as kwargs
-    # The headers argument is only implemented from Django 4.2, which clashes with the MySQL db version < 8
-    # headers = {f"HTTP_{k.replace('-', '_')}": v for k, v in (headers or {}).items()}
-
     # Set URL
     url = f"{function_inputs.api_url.get_secret_value()}/from_datafusr/"
 
@@ -81,48 +77,27 @@ def automate_function(
     # Handle response
     if response.get('building_data'):
 
-        print("Building data successfully retrieved!")
-
         try:
-
-            print("Setting up temporary file...")
-
-            # Setup temporary file
-            temp_dir = tempfile.gettempdir()
-            temp_file = Path(temp_dir, f"building_data_{datetime.now().timestamp():.0f}.html")
-
-            print("Converting building data to Pandas DataFrame...")
 
             # Create a dataframe from the API response
             building_data_df = pd.DataFrame(response['building_data'])
 
-            print("Converting building data to HTML...")
-
             # Convert to HTML
             building_data_html = building_data_df.to_html()
 
-            print("Storing building data as HTML...")
-
             # Store as HTML
-            with open("./building_data.html", "w") as fp:
-                fp.write(building_data_html)
-            with open(temp_file, "w") as fp:
+            html_file = Path("./building_data.html")
+            with open(html_file, "w") as fp:
                 fp.write(building_data_html)
 
-            print("Mark run as successful...")
+            # Attach the HTML table to the Speckle model
+            if html_file.exists():
+                automate_context.store_file_result(html_file)
+            else:
+                raise FileNotFoundError(f"File not found: {html_file}")
 
             # Mark run as successful
             automate_context.mark_run_success("Building data table successfully generated!")
-
-            print("Attaching building data to Speckle model...")
-
-            # Attach the HTML table to the Speckle model
-            automate_context.store_file_result("./building_data.html")
-
-            if temp_file.exists():
-                automate_context.store_file_result(str(temp_file))
-            else:
-                raise FileNotFoundError(f"File not found: {temp_file}")
 
         except Exception as e:
 
