@@ -102,6 +102,7 @@ def automate_function(
             building_data_html = building_data_df.to_html()
 
             print("Storing building data as HTML...")
+            print(f"\n{building_data_html}\n")
 
             # Store as HTML
             # with open("./building_data.html", "w") as fp:
@@ -121,7 +122,7 @@ def automate_function(
             automate_context.store_file_result("./speckle_automate_test.pdf")
 
             if temp_file.exists():
-                automate_context.store_file_result(str(temp_file))
+                # automate_context.store_file_result(str(temp_file))
                 pass
             else:
                 raise FileNotFoundError(f"File not found: {temp_file}")
